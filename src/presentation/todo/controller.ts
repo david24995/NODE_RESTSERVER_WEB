@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../../data/postgres';
+import { prisma } from '../../data/postgres-data';
 
 let todos = [
   { id: 1, text: 'Buy milk', completedAt: new Date() },
@@ -12,16 +12,18 @@ export class TodoController {
   constructor() {}
 
   async getTodos(req: Request, res: Response) {
+    const todos = await prisma.todo.findMany();
+
     return res.json(todos);
   }
 
   async getOne(req: Request, res: Response) {
-    const { id } = req.params;
+    const id = Number(req.params.id);
 
-    if (isNaN(Number(id)))
+    if (isNaN(id))
       return res.status(400).json({ error: `${id} is not a number` });
 
-    const todo = todos.find((todo) => todo.id == Number(id));
+    const todo = await prisma.todo.findFirst({ where: { id } });
 
     todo
       ? res.json(todo)
@@ -52,21 +54,17 @@ export class TodoController {
     if (isNaN(Number(id)))
       return res.status(400).json({ error: `${id} is not a number` });
 
-    const todo = todos.find((todo) => todo.id == Number(id));
+    const todo = await prisma.todo.findFirst({ where: { id } });
 
     if (!todo)
       return res.status(404).json({ error: `TODO with id: ${id} not found` });
 
-    todo.text = text;
-
-    todos = todos.map((t) => {
-      if (t.id == id) {
-        return todo;
-      }
-      return t;
+    const todoUpdated = await prisma.todo.update({
+      where: { id },
+      data: { text },
     });
 
-    return res.json(todo);
+    return res.json(todoUpdated);
   }
 
   async deleteOne(req: Request, res: Response) {
@@ -76,17 +74,17 @@ export class TodoController {
     if (isNaN(Number(id)))
       return res.status(400).json({ error: `${id} is not a number` });
 
-    const todo = todos.find((todo) => todo.id == Number(id));
+    const todo = await prisma.todo.findFirst({ where: { id } });
 
     if (!todo)
       return res.status(404).json({ error: `TODO with id: ${id} not found` });
 
-    todos = todos.filter((t) => {
-      if (t.id !== id) {
-        return todo;
-      }
-    });
+    const todoDeleted = await prisma.todo.delete({ where: { id } });
 
-    return res.json(todo);
+    return res.json(todoDeleted);
+  }
+
+  private async findFirstTodo(id: number) {
+    return prisma.todo.findFirst({ where: { id } });
   }
 }
