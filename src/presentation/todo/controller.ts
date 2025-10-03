@@ -1,12 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../data/postgres-data';
 
-let todos = [
-  { id: 1, text: 'Buy milk', completedAt: new Date() },
-  { id: 2, text: 'Buy bread', completedAt: null },
-  { id: 3, text: 'Buy butter', completedAt: new Date() },
-];
-
 export class TodoController {
   //* DI
   constructor() {}
