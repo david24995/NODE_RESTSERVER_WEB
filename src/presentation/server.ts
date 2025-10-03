@@ -1,6 +1,5 @@
 import express, { Application, Router } from 'express';
 import morgan from 'morgan';
-import path from 'path';
 
 interface Options {
   app: Application;
@@ -33,7 +32,7 @@ export class Server {
     this.app
       .listen(this.port)
       .on('listening', () => {
-        console.log('Hola');
+        console.log('Serving running');
       })
       .on('error', (err) => {
         console.log(err);
