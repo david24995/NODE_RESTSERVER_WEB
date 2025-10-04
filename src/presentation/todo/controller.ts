@@ -2,14 +2,14 @@ import { Request, Response } from 'express';
 import { prisma } from '../../data/postgres-data';
 import { CreateTodoDto } from '../../domain/dtos/todos/create-todo.dto';
 import { UpdateTodoDto } from '../../domain/dtos/todos/update-todo.dto';
+import { TodoRepository } from '../../domain/repositories/todo.repository';
 
 export class TodoController {
   //* DI
-  constructor() {}
+  constructor(private readonly todoRepository: TodoRepository) {}
 
   async getTodos(req: Request, res: Response) {
-    const todos = await prisma.todo.findMany();
-
+    const todos = await this.todoRepository.getAll();
     return res.json(todos);
   }
 
@@ -19,7 +19,7 @@ export class TodoController {
     if (isNaN(id))
       return res.status(400).json({ error: `${id} is not a number` });
 
-    const todo = await prisma.todo.findFirst({ where: { id } });
+    const todo = await this.todoRepository.findById(id);
 
     todo
       ? res.json(todo)
@@ -33,9 +33,7 @@ export class TodoController {
       return res.status(400).json({ error});
 
     if(createTodoDto) {
-      const todo = await prisma.todo.create({
-      data: createTodoDto
-    });
+      const todo = await this.todoRepository.create(createTodoDto)
     return res.status(201).json(todo);
     }
 
@@ -55,10 +53,7 @@ export class TodoController {
     if (!todo)
       return res.status(404).json({ error: `TODO with id: ${id} not found` });
     
-    const todoUpdated = await prisma.todo.update({
-      where: { id },
-      data: updateTodoDto!.values
-    });
+    const todoUpdated = await this.todoRepository.updateById(updateTodoDto!);
 
     return res.json(todoUpdated);
   }
@@ -75,12 +70,9 @@ export class TodoController {
     if (!todo)
       return res.status(404).json({ error: `TODO with id: ${id} not found` });
 
-    const todoDeleted = await prisma.todo.delete({ where: { id } });
+    const todoDeleted = await this.todoRepository.deleteById(id);
 
     return res.json(todoDeleted);
   }
 
-  private async findFirstTodo(id: number) {
-    return prisma.todo.findFirst({ where: { id } });
-  }
 }

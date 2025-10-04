@@ -2,6 +2,7 @@ import express from 'express';
 import { Server } from './presentation/server';
 import { envs } from './config/envs';
 import { AppRoutes } from './presentation/routes';
+import { TodoDataSourceImpl } from './infraestructure/datasource/todo.datasource.impl';
 
 (() => {
   main();
